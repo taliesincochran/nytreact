@@ -89,6 +89,7 @@ class Search extends Component {
 		if(!isNaN(endDate)) {
 			query += "&end_date=" + endDate;
 		}
+		query += "?page=" + page;
 		console.log({query: query});
 		axios.get(query).then(response=> {
 			var newArticles = [];
