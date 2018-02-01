@@ -54,7 +54,7 @@ class Search extends Component {
 		})
 		axios.delete('api/delete' + articleID)
 			.then(result => {
-				this.setState({articles: newArticles})
+				this.setState({savedArticles: newArticles})
 				this.getSavedArticles();
 			});
 	}
