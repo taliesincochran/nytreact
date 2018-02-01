@@ -15,47 +15,35 @@ import {
 		Radio,
 		Button	
 		} from 'bloomer';
+import FormField from './FormField';
 const ArticleSearch = props => {
 	return (
 		<div>
-			<Field>
-				<FieldLabel>
-					<Label>Search Topic</Label>
-				</FieldLabel>
-				<FieldBody>
-					<Field>
-						<Control>
-							<Input placeholder="Search Topic" name="topic" onChange={props.onChange} value={props.topic} />
-						</Control>
-					</Field>
-				</FieldBody>
-			</Field>
-			<Field isHorizontal>
-				<FieldLabel isNormal>
-				    <Label>Start Date</Label>
-				</FieldLabel>
-				<FieldBody>
-				    <Field isGrouped>
-				        <Control isExpanded hasIcons='left'>
-				            <Input type= 'date' placeholder='Start Date (YYYYMMDD)' onChange={props.onChange} value={props.startDate} name='startDate' />
-				            <Icon isSize='small' isAlign='left'><span className="fa fa-calender" aria-hidden="true"/></Icon>
-				        </Control>
-				    </Field>
-				</FieldBody>
-			</Field>
-			<Field isHorizontal>
-				<FieldLabel isNormal>
-				    <Label>End Date</Label>
-				</FieldLabel>
-				<FieldBody>
-				    <Field isGrouped>
-				        <Control isExpanded hasIcons='left'>
-				            <Input type='date' placeholder='End Date (YYYYMMDD)' onChange={props.onChange} value={props.endDate} name='endDate' />
-				            <Icon isSize='small' isAlign='left'><span className="fa fa-calender" aria-hidden="true"/></Icon>
-				        </Control>
-				    </Field>
-				</FieldBody>
-			</Field>
+			<FormField 
+				type={'text'} 
+				horizontal={''} 
+				label={'Search Topic'} 
+				placeholder={"Search Topic"} 
+				name={"topic"} 
+				onChange={props.onChange} 
+				value={props.topic} 
+			/>
+			<FormField 
+				type={'date'} 
+				label={'Start Date'} 
+				placeholder={'Start Date'} 
+				onChange={props.onChange} 
+				value={props.startDate} 
+				name={'startDate'}
+			/>
+			<FormField 
+				type={'date'} 
+				label={'End Date'} 
+				placeholder={'End Date'} 
+				onChange={props.onChange} 
+				value={props.endDate} 
+				name={'endDate'}
+			/>
 			<Field isHorizontal>
 				<FieldLabel /> {/* empty for spacing */}
 				<FieldBody>

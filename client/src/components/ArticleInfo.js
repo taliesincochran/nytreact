@@ -5,15 +5,14 @@ import {
 		MediaLeft,
 		MediaContent,
 		Content,
+		Image,
 		Level,
 		LevelLeft,
 		LevelItem,
 		Icon,
-		Image,
-		Delete
-
+		Button
 	} from 'bloomer';
-const NewArticles = props => {
+const ArticleInfo = props => {
 	return (
 		<div>
 			<Media>
@@ -30,22 +29,18 @@ const NewArticles = props => {
 			        </Content>
 			        <Level isMobile>
 			            <LevelLeft>
-			                <LevelItem href='#'>
-			                    <Icon isSize='small'><span className="fa fa-reply" aria-hidden="true" /></Icon>
+			                <LevelItem href={props.url}>
+			                    <Button isColor={props.buttonColor}>Go To Article</Button>
 			                </LevelItem>
-			                <LevelItem href='#'>
-			                    <Icon isSize='small'><span className="fa fa-retweet" aria-hidden="true" /></Icon>
-			                </LevelItem>
-			                <LevelItem href='#'>
-			                    <Icon isSize='small'><span className="fa fa-heart" aria-hidden="true" /></Icon>
-			                </LevelItem>
+			                <LevelItem>
+			                	<Button isColor={props.buttonColor2} onClick={props.buttonFunction2}>{props.button2Text}</Button>
+			                </LevelItem> 
 			            </LevelLeft>
 			        </Level>
 			    </MediaContent>
-			    <MediaRight><Delete /></MediaRight>
 			</Media>
 		</div>	
 	)			
 }
 
-export default NewArticles;
+export default ArticleInfo;

@@ -1,66 +1,209 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import ArticleInfo from './ArticleInfo';
 import ArticleSearch from './ArticleSearch';
-import NewArticles from './NewArticles';
 import key from '../key';
+import { Box, Button } from 'bloomer';
 class Search extends Component {
-	state = {
-		topic: '',
-		startDate: '',
-		endDate: '',
-		articles: [],
-		savedArticles: []
+	constructor(props) {
+	    super(props)
+
+	    this.state = {
+			topic: '',
+			startDate: '',
+			endDate: '',
+			page: '',
+			articles: [],
+			savedArticles: [],
+			page: 1,
+			lastTopic: ''
+		}
+    	this.componentDidMount = this.componentDidMount.bind(this);
+ 		this.saveArticle = this.saveArticle.bind(this);
+ 		this.getNewArticles = this.getNewArticles.bind(this);
+ 		this.deleteArticle = this.deleteArticle.bind(this);
+ 		this.getSavedArticles = this.getSavedArticles.bind(this);
+ 	}
+	componentDidMount = () => {
+		this.getSavedArticles();
 	}
+	componentDidUpdate = () => this.render();
 	handleInputChange = event => {
 		let { name, value } = event.target;	
 		this.setState({
 			[name]: value
 		})
 		console.log(this.state);
-
 	}
-	handleFormSubmit = event => {
-		event.preventDefault();	
-		let queryStartDate;
-		let queryEndDate;
-		let tempStartDate = this.state.startDate.split('-');
-		queryStartDate = tempStartDate.join('');
-		let tempEndDate = this.state.endDate.split('-');
-		queryEndDate = tempEndDate.join('');
-		console.log(queryStartDate);
-		console.log(queryEndDate);
-		var results = [];
-		let query = "https://api.nytimes.com/svc/search/v2/articlesearch.json" + key + "&q=" + this.state.topic;
-		if(!isNaN(queryStartDate)) {
-			query += "&begin_date=" + queryStartDate;
+	saveArticle = article => {
+		var newArticles = []
+		this.state.articles.map(newArticle => {
+			if(article.articleID !== newArticle.articleID) {
+				newArticles.push(newArticle);
+			}
+		})
+		axios.post("/api/saved", article).then(result => {
+			this.setState({articles: newArticles})
+			this.getSavedArticles()
+		})
+	}
+	deleteArticle = articleID => {
+		var newArticles= [];
+		this.state.savedArticles.map(newArticle => {
+			if(articleID !== newArticle.articleID) {
+				newArticles.push(newArticle);
+			}
+		})
+		axios.delete('api/delete' + articleID)
+			.then(result => {
+				this.setState({articles: newArticles})
+				this.getSavedArticles();
+			});
+	}
+	getSavedArticles = () => {
+		console.log('get saved called');
+		axios.get("/api/saved")
+			.then(results => {
+				console.log(results);
+				this.setState({savedArticles: results.data})
+		})
+	}
+	getNewArticles = (page) => {
+		if(this.state.lastTopic !== this.state.topic) {
+			this.setState({page: 1})
 		}
-		if(!isNaN(queryEndDate)) {
-			query += "&end_date=" + queryEndDate;
+		var getQueryDate = inputDate => {
+			let temp = inputDate.split('-');
+			console.log('getQueryDate', temp.join(''))
+			return temp.join('');
+		};
+		var newArticles = [];
+		console.log('get new articles called');
+		var startDate = getQueryDate(this.state.startDate);
+		var endDate = getQueryDate(this.state.endDate);
+		console.log(startDate, endDate);
+		let query = "https://api.nytimes.com/svc/search/v2/articlesearch.json" + key + "&q=" + this.state.topic;
+		if(!isNaN(startDate)) {
+			query += "&begin_date=" + startDate;
+		}
+		if(!isNaN(endDate)) {
+			query += "&end_date=" + endDate;
 		}
 		console.log({query: query});
 		axios.get(query).then(response=> {
+			var newArticles = [];
 			response.data.response.docs.map(article => {
-				console.log(article);
-				results.push(article);
+				// console.log(article);
+				var title = article.headline.main;
+				var image = 'https://www.insidehighered.com/sites/default/server_files/media/nyt-t-logo.png';
+				var byline = '';
+				var url = article.web_url;
+				var date = article.pub_date.split("T")[0];
+				var snippet = article.snippet;
+				var articleID = article._id;
+				if(article.multimedia) {
+					if(article.multimedia.length>2) {
+						image = 'https://nytimes.com/' + article.multimedia[2].url
+					}
+				} else{console.log("Image does not exist")}
+				if(article.byline) {
+					byline = article.byline.original
+				} else {console.log('Byline does not exist')}
+				var newArticle = {
+					title: title, 
+					image: image, 
+					byline: byline, 
+					date: date, 
+					url: url, 
+					snippet: snippet,
+					articleID: articleID
+				}
+				console.log("newArticle: ", newArticle);
+				newArticles.push(newArticle);
 			});
-		}).then(response => {
-			this.setState({articles: results})
-			console.log(this.state)
+			return newArticles;
+		})
+		.then(results=> {
+			this.setState({articles: results, lastTopic: this.state.topic})
 		})
 	}
-	render() {
+	nextpage = () => {
+		var newPage = this.state.page +1;
+		this.setState({page: newPage})
+		this.getNewArticles(newPage);
+	}
+	handleFormSubmit = event => {
+		event.preventDefault();
+		this.getNewArticles(this.state.page);
+	}
+	render () {
 		return (
-			<div>
-				<ArticleSearch onSubmit={this.handleFormSubmit.bind(this)} onChange={this.handleInputChange.bind(this)} topic={this.state.topic} startDate={this.state.startDate} endDate={this.state.endDate} />
+			<div style={{position: "relative", top: "250px"}}>
+				<a name="#newSearch"></a>
+				<ArticleSearch 
+					onSubmit={this.handleFormSubmit} 
+					onChange={this.handleInputChange} 
+					topic={this.state.topic} 
+					startDate={this.state.startDate} 
+					endDate={this.state.endDate} 
+					newSearch={this.newSearch}
+				/>
 				<div>
+					<Box style={{marginTop: '25px'}}><h1 style={{textAlign: 'center'}}><a name="newArticles">Search Results</a></h1></Box>
+					<Box>
+					{this.state.articles.length === 0 ? (<h1 style={{textAlign: 'center'}}>No search results. </h1>): <h2></h2>}
 					{this.state.articles.map(article =>{
+						console.log(article);
 						return(
-							<NewArticles key={article._id} image={article.multimedia[0].url} byline={article.byline.main} title={article.headline.main} date={article.pub_date.split("T")[0]} url={article.web_url} snippet={article.snippet} section={article.new_desk} />
+							<ArticleInfo 
+								key={article.articleID} 
+								image={article.image} 
+								byline={article.byline} 
+								title={article.title} 
+								date={article.date} 
+								url={article.url} 
+								snippet={article.snippet} 
+								buttonColor={'primary'}
+								buttonColor2={'primary'}
+								buttonFunction2={()=>this.saveArticle(article)} 
+								button2Text={'Save Article'}
+							/>					
 						)
-						
 					})}
+					</Box>
+					{this.state.lastTopic !== ''?<Button isColor='primary' onClick={this.nextpage}>Get More Results</Button>:<p></p>}
 				</div>
-
+				<div style={{height: '20px'}}></div>
+				<div>
+					<Box><h1 style={{textAlign: 'center'}}><a name='savedArticles'>Saved Articles</a></h1></Box>
+					<Box>
+					{this.state.savedArticles.length === 0 ? (<h1 style={{textAlign: 'center'}}>No saved articles. </h1>): <h2></h2>}
+					{this.state.savedArticles.map(article => {
+						if(article.multimedia) {
+							console.log('multimedia', article.multimedia)
+						}
+						var byline = '';
+						if(article.byline) {
+							byline = article.byline.main;
+						}
+						return(
+								<ArticleInfo 
+									key={article.articleID} 
+									image={article.image} 
+									byline={article.byline} 
+									title={article.title} 
+									date={article.date} 
+									url={article.url} 
+									snippet={article.snippet}
+									buttonColor={'primary'}
+									buttonColor2={'danger'}
+									buttonFunction2={()=>this.deleteArticle(article.articleID)}
+									button2Text={'Delete'}
+								/>					
+						)
+					})}
+					</Box>
+				</div>
 			</div>	
 		)
 	}
