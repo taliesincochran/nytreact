@@ -14,9 +14,7 @@ class Search extends Component {
 			endDate: '',
 			page: '',
 			articles: [],
-			savedArticles: [],
-			page: 1,
-			lastTopic: ''
+			savedArticles: []
 		}
     	this.componentDidMount = this.componentDidMount.bind(this);
  		this.saveArticle = this.saveArticle.bind(this);
@@ -68,20 +66,14 @@ class Search extends Component {
 				this.setState({savedArticles: results.data})
 		})
 	}
-	getNewArticles = (page) => {
-		if(this.state.lastTopic !== this.state.topic) {
-			this.setState({page: 1})
-		}
+	getNewArticles = () => {
 		var getQueryDate = inputDate => {
 			let temp = inputDate.split('-');
-			console.log('getQueryDate', temp.join(''))
 			return temp.join('');
 		};
 		var newArticles = [];
-		console.log('get new articles called');
 		var startDate = getQueryDate(this.state.startDate);
 		var endDate = getQueryDate(this.state.endDate);
-		console.log(startDate, endDate);
 		let query = "https://api.nytimes.com/svc/search/v2/articlesearch.json" + key + "&q=" + this.state.topic;
 		if(!isNaN(startDate)) {
 			query += "&begin_date=" + startDate;
@@ -89,8 +81,7 @@ class Search extends Component {
 		if(!isNaN(endDate)) {
 			query += "&end_date=" + endDate;
 		}
-		query += "?page=" + page;
-		console.log({query: query});
+		console.log('query', {query: query});
 		axios.get(query).then(response=> {
 			var newArticles = [];
 			response.data.response.docs.map(article => {
@@ -119,23 +110,17 @@ class Search extends Component {
 					snippet: snippet,
 					articleID: articleID
 				}
-				console.log("newArticle: ", newArticle);
 				newArticles.push(newArticle);
 			});
 			return newArticles;
 		})
 		.then(results=> {
-			this.setState({articles: results, lastTopic: this.state.topic})
+			this.setState({articles: results})
 		})
-	}
-	nextpage = () => {
-		var newPage = this.state.page +1;
-		this.setState({page: newPage})
-		this.getNewArticles(newPage);
 	}
 	handleFormSubmit = event => {
 		event.preventDefault();
-		this.getNewArticles(this.state.page);
+		this.getNewArticles();
 	}
 	render () {
 		return (
@@ -154,7 +139,6 @@ class Search extends Component {
 					<Box>
 					{this.state.articles.length === 0 ? (<h1 style={{textAlign: 'center'}}>No search results. </h1>): <h2></h2>}
 					{this.state.articles.map(article =>{
-						console.log(article);
 						return(
 							<ArticleInfo 
 								key={article.articleID} 
@@ -172,7 +156,6 @@ class Search extends Component {
 						)
 					})}
 					</Box>
-					{this.state.lastTopic !== ''?<Button isColor='primary' onClick={this.nextpage}>Get More Results</Button>:<p></p>}
 				</div>
 				<div style={{height: '20px'}}></div>
 				<div>
