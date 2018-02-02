@@ -41,8 +41,10 @@ return (
             </NavItem>
         </NavCenter>
         <NavRight isMenu>
-            <NavItem href='http://developer.nytimes.com/article_search_v2.json'>
-                Article Search Api
+            <NavItem>
+                <a href='http://developer.nytimes.com/article_search_v2.json'>
+                  <img src="http://static01.nytimes.com/packages/images/developer/logos/poweredby_nytimes_200c.png" />
+                </a>
             </NavItem>
         </NavRight>
     </Nav>
